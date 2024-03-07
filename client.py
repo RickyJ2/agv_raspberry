@@ -1,29 +1,44 @@
-import websocket
-import _thread
-import time
-import rel
+from tornado.ioloop import IOLoop, PeriodicCallback
+from tornado import gen
+from tornado.websocket import websocket_connect
+from tornado import httpclient
 
-def on_message(ws, message):
-    print(message)
+class Client(object):
+    def __init__(self, url, timeout):
+        self.url = url
+        self.timeout = timeout
+        self.ioloop = IOLoop.instance()
+        self.ws = None
+        self.connect()
+        PeriodicCallback(self.keep_alive, 20000).start()
+        self.ioloop.start()
 
-def on_error(ws, error):
-    print(error)
+    @gen.coroutine
+    def connect(self):
+        print("trying to connect")
+        try:
+            self.ws = yield websocket_connect(self.url)
+        except Exception as e:
+            print("connection error", e)
+        else:
+            print("connected")
+            self.run()
 
-def on_close(ws, close_status_code, close_msg):
-    print("### closed ###")
+    @gen.coroutine
+    def run(self):
+        while True:
+            msg = yield self.ws.read_message()
+            if msg is None:
+                print("connection closed")
+                self.ws = None
+                break
 
-def on_open(ws):
-    print("Opened connection")
+    def keep_alive(self):
+        if self.ws is None:
+            self.connect()
+        else:
+            self.ws.write_message("keep alive")
 
 if __name__ == "__main__":
-    websocket.enableTrace(True)
-    ws = websocket.WebSocketApp("ws://localhost:8080/agv",
-                                header={'websocketpass':'1234', 'id':'1'},
-                                on_open=on_open,
-                                on_message=on_message,
-                                on_error=on_error,
-                                on_close=on_close)
-
-    ws.run_forever(dispatcher=rel, reconnect=5)  # Set dispatcher to automatic reconnection, 5 second reconnect delay if connection closed unexpectedly
-    rel.signal(2, rel.abort)  # Keyboard Interrupt
-    rel.dispatch()
+    request = httpclient.HTTPRequest("ws://localhost:8080/agv", headers={'websocketpass':'1234', 'id':'1'})
+    client = Client(request, 5)
