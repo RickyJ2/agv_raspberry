@@ -1,7 +1,6 @@
 from tornado.ioloop import IOLoop, PeriodicCallback
 from tornado import gen
 from tornado.websocket import websocket_connect
-from tornado import httpclient
 
 class Client(object):
     def __init__(self, url, timeout):
@@ -9,6 +8,8 @@ class Client(object):
         self.timeout = timeout
         self.ioloop = IOLoop.instance()
         self.ws = None
+
+    def start(self):
         self.connect()
         PeriodicCallback(self.keep_alive, 20000).start()
         self.ioloop.start()
@@ -38,7 +39,3 @@ class Client(object):
             self.connect()
         else:
             self.ws.write_message("keep alive")
-
-if __name__ == "__main__":
-    request = httpclient.HTTPRequest("ws://localhost:8080/agv", headers={'websocketpass':'1234', 'id':'1'})
-    client = Client(request, 5)
