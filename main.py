@@ -3,7 +3,7 @@ from client import Client
 from serialCommunication import SerialCommunication
 from lidar import Lidar
 
-IP = "127.0.0.1"
+IP = "10.53.8.42"
 PORT = 8080
 header = { 
         'websocketpass':'1234', 
@@ -12,8 +12,9 @@ header = {
 
 if __name__ == "__main__":
     #Start Lidar
-    # lidar = Lidar("COM7")
-    # lidar.init()
+    lidar = Lidar("/dev/ttyUSB1")
+    lidar.init()
+    print(lidar.checkHealth())
     # lidar.start()
     #Serial communication to Arduino
     serial = SerialCommunication()
