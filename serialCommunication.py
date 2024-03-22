@@ -3,7 +3,7 @@ import threading
 import time
 
 class SerialCommunication:
-    def __init__(self, port = 'COM8', baudrate = 9600):
+    def __init__(self, port = '/dev/ttyUSB0', baudrate = 9600):
         self.port = port
         self.baudrate = baudrate
         self.ser = serial.Serial(port, baudrate, timeout=1)
@@ -20,9 +20,6 @@ class SerialCommunication:
             buffer = self.ser.readline(self.ser.inWaiting())
             print(buffer)
             time.sleep(5)
-			# if buffer:
-			# 	for conn in WSHandler.connections:
-			# 		conn.write_message(buffer)
 
     def send(self, message):
         self.ser.write(bytes(message, 'utf-8'))
