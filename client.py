@@ -8,6 +8,7 @@ class Client(object):
         self.timeout = timeout
         self.ioloop = IOLoop.instance()
         self.ws = None
+        self.msg = []
 
     def start(self):
         self.connect()
@@ -28,11 +29,14 @@ class Client(object):
     @gen.coroutine
     def run(self):
         while True:
-            msg = yield self.ws.read_message()
-            if msg is None:
-                print("connection closed")
-                self.ws = None
-                break
+            data = yield self.ws.read_message()
+            self.msg.append(data)
+    
+    def send(self):
+        if self.ws is None:
+            self.connect()
+        else:
+            self.ws.write_message("Hello World")
 
     def keep_alive(self):
         if self.ws is None:
