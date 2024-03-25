@@ -2,7 +2,7 @@ import serial
 import threading
 import json
 
-class arduino:
+class Arduino:
     def __init__(self, port = '/dev/ttyUSB1', baudrate = 9600):
         self.port = port
         self.baudrate = baudrate
