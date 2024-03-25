@@ -4,7 +4,7 @@ from arduino import Arduino
 from lidar import Lidar
 import json
 
-IP = "10.53.8.42"
+IP = "10.53.7.102"
 PORT = 8080
 header = { 
         'websocketpass':'1234', 
