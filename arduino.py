@@ -1,3 +1,5 @@
+
+from time import sleep
 import serial
 import threading
 import json
@@ -6,7 +8,7 @@ class Arduino:
     def __init__(self, port = '/dev/ttyUSB1', baudrate = 9600):
         self.port = port
         self.baudrate = baudrate
-        self.ser = serial.Serial(port, baudrate, timeout=1)
+        self.ser = None
         #init variable
         self.container = False
         self.collision = False
@@ -21,6 +23,13 @@ class Arduino:
             "z": 0,
         }
         self.power = 100
+    
+    def connect(self):
+        try:
+            self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
+        except serial.SerialException as e:
+            print("Arduino failed to connect")
+            sleep(5)
 
     def start(self):
         self.runThread = True
@@ -29,11 +38,14 @@ class Arduino:
     
     def reader(self):
         while True:
-            buffer = ''
-            if not (self.ser.in_waiting > 0):
+            if self.ser is None:
+                self.connect()
                 continue
             if not self.runThread:
                 break
+            buffer = ''
+            if not (self.ser.in_waiting > 0):
+                continue
             try:
                 buffer = self.ser.readline().decode("utf-8")
                 data = json.loads(buffer)
@@ -44,8 +56,7 @@ class Arduino:
                 self.power = data['power']
                 # print('container: ', self.container, ' collision: ', self.collision,' orientation: ', self.orientation,' acceleration: ', self.acceleration, ' power: ', self.power)
             except:
-                error = buffer
-                # print('Error: ', buffer)
+                print('Error: ', buffer)
 
     def send(self, message):
         self.ser.write(bytes(message, 'utf-8'))

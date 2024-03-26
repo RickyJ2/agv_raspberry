@@ -17,11 +17,10 @@ if __name__ == "__main__":
     try:
         #Start Lidar
         lidar = Lidar()
-        lidar.init()
         lidar.start()
 
         #Serial communication to Arduino
-        arduino = Arduino("COM8")
+        arduino = Arduino()
         arduino.start()
 
         #Websocket communication to server
