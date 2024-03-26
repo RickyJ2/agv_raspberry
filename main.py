@@ -30,7 +30,10 @@ if __name__ == "__main__":
             if msg is None:
                 return
             print(msg)
-            arduino.send(msg)
+            data = {
+                "cmd": msg
+            }
+            arduino.send(json.dumps(data))
         client.connect(clientOnMsg)
 
         def sendAGVState():
