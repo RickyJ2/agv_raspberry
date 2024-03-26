@@ -3,40 +3,59 @@ from client import Client
 from arduino import Arduino
 from lidar import Lidar
 import json
+from tornado.ioloop import IOLoop, PeriodicCallback
 
-IP = "10.53.7.102"
+IP = "localhost"
 PORT = 8080
 header = { 
         'websocketpass':'1234', 
         'id':'1'
     }
+ioloop = IOLoop.instance()
 
 if __name__ == "__main__":
-    #Start Lidar
-    lidar = Lidar()
-    lidar.init()
-    lidar.start()
-    #Serial communication to Arduino
-    arduino = Arduino()
-    arduino.start()
-    #Websocket communication to server
-    request = httpclient.HTTPRequest(f"ws://{IP}:{PORT}/agv", headers=header)
-    client = Client(request, 5)
-    client.start()
-    while(1):
-    #send data to server
-        data = {
-            "container": arduino.getContainer(),
-            "collision": arduino.getCollision(),
-            "orientation": arduino.getOrientation(),
-            "acceleration": arduino.getAcceleration(),
-            "power": arduino.getPower(),
-            "lidar": lidar.getScanData()
-        }
-        client.send(json.dumps(data))
-        #consume message from server
-        if(client.msg.length > 0):
+    try:
+        #Start Lidar
+        lidar = Lidar()
+        lidar.init()
+        lidar.start()
+
+        #Serial communication to Arduino
+        arduino = Arduino("COM8")
+        arduino.start()
+
+        #Websocket communication to server
+        request = httpclient.HTTPRequest(f"ws://{IP}:{PORT}/agv", headers=header)
+        client = Client(request, 5)
+        def clientOnMsg(msg):
+            if msg is None:
+                return
+            print(msg)
+            arduino.send(msg)
+        client.connect(clientOnMsg)
+
+        def sendAGVState():
             data = {
-                "cmd" : client.msg.pop(0)
+                "container": arduino.getContainer(),
+                "collision": arduino.getCollision(),
+                "orientation": arduino.getOrientation(),
+                "acceleration": arduino.getAcceleration(),
+                "power": arduino.getPower()
+                # "lidar": lidar.getScanData()
             }
-            arduino.send(json.dumps(data))
+            client.send(json.dumps(data))
+        PeriodicCallback(sendAGVState, 1000).start()
+        ioloop.start()
+    except KeyboardInterrupt:
+        ioloop.stop()
+        client.closeConnection()
+        arduino.close()
+        lidar.stop()
+        print("Exit")
+    except Exception as e:
+        print("error catched")
+        ioloop.stop()
+        client.closeConnection()
+        arduino.close()
+        lidar.stop()
+        print("Exit")

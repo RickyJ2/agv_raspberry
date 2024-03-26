@@ -10,38 +10,49 @@ class Arduino:
         #init variable
         self.container = False
         self.collision = False
-        self.orientation = {0,0,0}
-        self.acceleration = {0,0,0}
+        self.orientation = {
+            "yaw": 0,
+            "roll": 0,
+            "pitch": 0
+        }
+        self.acceleration = {
+            "x": 0,
+            "y": 0,
+            "z": 0,
+        }
         self.power = 100
 
     def start(self):
-        self.thread_read = threading.Thread(target=self.reader)
+        self.runThread = True
+        self.thread_read = threading.Thread(target=self.reader, daemon=True)
         self.thread_read.start()
     
     def reader(self):
         while True:
             buffer = ''
-            buffer = self.ser.readline(self.ser.inWaiting())
-            if buffer != '':
-                try:
-                    data = json.loads(buffer)
-                    self.container = data['container']
-                    self.collision = data['collision']
-                    self.orientation = data['orientation']
-                    self.acceleration = data['acceleration']
-                    self.power = data['power']
-                    print('container: ', self.container)
-                    print('collision: ', self.collision)
-                    print('orientation: ', self.orientation)
-                    print('acceleration: ', self.acceleration)
-                    print('power: ', self.power)
-                except:
-                    print('Error: ', buffer)
+            if not (self.ser.in_waiting > 0):
+                continue
+            if not self.runThread:
+                break
+            try:
+                buffer = self.ser.readline().decode("utf-8")
+                data = json.loads(buffer)
+                self.container = data['container']
+                self.collision = data['collision']
+                self.orientation = data['orientation']
+                self.acceleration = data['acceleration']
+                self.power = data['power']
+                # print('container: ', self.container, ' collision: ', self.collision,' orientation: ', self.orientation,' acceleration: ', self.acceleration, ' power: ', self.power)
+            except:
+                error = buffer
+                # print('Error: ', buffer)
 
     def send(self, message):
         self.ser.write(bytes(message, 'utf-8'))
 
     def close(self):
+        self.runThread = False
+        self.thread_read.join()
         self.ser.close()
 
     def getContainer(self):
