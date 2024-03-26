@@ -4,7 +4,7 @@ from adafruit_rplidar import RPLidar, RPLidarException
 import threading
 
 class Lidar:
-    def __init__(self, port):
+    def __init__(self, port = '/dev/ttyUSB0'):
         self.port = port
         self.scan_data = [0] * 360
         self.lidar = None
