@@ -39,8 +39,8 @@ if __name__ == "__main__":
                 "collision": arduino.getCollision(),
                 "orientation": arduino.getOrientation(),
                 "acceleration": arduino.getAcceleration(),
-                "power": arduino.getPower()
-                # "lidar": lidar.getScanData()
+                "power": arduino.getPower(),
+                "lidar": lidar.getScanData()
             }
             client.send(json.dumps(data))
         PeriodicCallback(sendAGVState, 1000).start()
