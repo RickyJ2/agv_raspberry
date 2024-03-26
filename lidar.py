@@ -1,10 +1,10 @@
-from time import sleep
 import math
+from time import sleep
 from adafruit_rplidar import RPLidar, RPLidarException
 import threading
 
 class Lidar:
-    def __init__(self, port = "/dev/ttyUSB0"):
+    def __init__(self, port):
         self.port = port
         self.scan_data = [0] * 360
         self.lidar = None
@@ -13,6 +13,7 @@ class Lidar:
         self.min_distance = 0
     
     def checkHealth(self):
+        print(self.lidar.health)
         if self.lidar.health[1] == 0 : 
             return True
         else :
@@ -21,15 +22,16 @@ class Lidar:
     def connect(self):
         try:
             self.lidar = RPLidar(None, self.port, timeout=3)
-            self.lidar.clear_input()
+            print(self.lidar.info)
+            print("Lidar connected")
         except RPLidarException as e:
-            print(e)
+            print("Lidar failed to connect")
             sleep(5)
         
     def start(self):
         self.runThread = True
-        thread = threading.Thread(target=self._scan, daemon=True)
-        thread.start()
+        self.thread = threading.Thread(target=self._scan, daemon=True)
+        self.thread.start()
 
     def _scan(self):
         while True:
@@ -39,20 +41,26 @@ class Lidar:
             if not self.runThread:
                 break
             try:
-                scan = next(self.lidar.iter_scans())
-                temp = [0]*360
-                for _, angle, distance in scan:
-                    if distance > self.max_distance or distance < self.min_distance:
-                        continue
-                    temp[min([359, math.floor(angle)])] = distance
-                self.scan_data = temp
-            except:
-                print("Lidar error")
+                for scan in self.lidar.iter_scans():
+                    if not self.runThread:
+                        break
+                    temp = [0]*360
+                    for _, angle, distance in scan:
+                        if distance > self.max_distance or distance < self.min_distance:
+                            temp[min([359, math.floor(angle)])] = 0
+                            continue
+                        temp[min([359, math.floor(angle)])] = distance
+                    self.scan_data = temp
+            except RPLidarException as e:
+                print("Lidar error: ", e)
+
     def getScanData(self):
         return self.scan_data
 
     def stop(self):
         try:
+            self.runThread = False
+            self.thread.join()
             self.lidar.stop()
             self.lidar.disconnect()
         except RPLidarException as e:

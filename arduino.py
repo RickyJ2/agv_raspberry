@@ -27,6 +27,7 @@ class Arduino:
     def connect(self):
         try:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
+            print("Arduino connected")
         except serial.SerialException as e:
             print("Arduino failed to connect")
             sleep(5)
@@ -56,7 +57,7 @@ class Arduino:
                 self.power = data['power']
                 # print('container: ', self.container, ' collision: ', self.collision,' orientation: ', self.orientation,' acceleration: ', self.acceleration, ' power: ', self.power)
             except:
-                print('Error: ', buffer)
+                print('Arduino Error: ', buffer)
 
     def send(self, message):
         self.ser.write(bytes(message, 'utf-8'))
