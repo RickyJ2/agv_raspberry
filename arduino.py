@@ -56,8 +56,8 @@ class Arduino:
                 self.acceleration = data['acceleration']
                 self.power = data['power']
                 # print('container: ', self.container, ' collision: ', self.collision,' orientation: ', self.orientation,' acceleration: ', self.acceleration, ' power: ', self.power)
-            except:
-                print('Arduino Error: ', buffer)
+            except Exception as e:
+                print('Arduino Error: ', e)
 
     def send(self, message):
         self.ser.write(bytes(message, 'utf-8'))
