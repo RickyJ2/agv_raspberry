@@ -29,7 +29,6 @@ if __name__ == "__main__":
         def clientOnMsg(msg):
             if msg is None:
                 return
-            print(msg)
             data = {
                 "cmd": msg
             }
