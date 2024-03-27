@@ -49,6 +49,7 @@ class Arduino:
                 continue
             try:
                 buffer = self.ser.readline().decode("utf-8")
+                
                 data = json.loads(buffer)
                 self.container = data['container']
                 self.collision = data['collision']
@@ -57,6 +58,7 @@ class Arduino:
                 self.power = data['power']
                 # print('container: ', self.container, ' collision: ', self.collision,' orientation: ', self.orientation,' acceleration: ', self.acceleration, ' power: ', self.power)
             except Exception as e:
+                print(buffer)
                 print('Arduino Error: ', e)
 
     def send(self, message):
@@ -70,7 +72,7 @@ class Arduino:
                 self.ser.close()
         except Exception as e:
             print('Arduino Error: ', e)
-            
+
     def getContainer(self):
         return self.container
     
