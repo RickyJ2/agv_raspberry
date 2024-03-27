@@ -32,6 +32,7 @@ if __name__ == "__main__":
             data = {
                 "cmd": msg
             }
+            print("Sending: ", data)
             arduino.send(json.dumps(data))
         client.connect(clientOnMsg)
 
