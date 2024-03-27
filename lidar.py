@@ -61,7 +61,8 @@ class Lidar:
         try:
             self.runThread = False
             self.thread.join()
-            self.lidar.stop()
-            self.lidar.disconnect()
+            if not (self.lidar is None):
+                self.lidar.stop()
+                self.lidar.disconnect() 
         except RPLidarException as e:
             print(e)

@@ -63,10 +63,14 @@ class Arduino:
         self.ser.write(bytes(message, 'utf-8'))
 
     def close(self):
-        self.runThread = False
-        self.thread_read.join()
-        self.ser.close()
-
+        try:
+            self.runThread = False
+            self.thread_read.join()
+            if not (self.ser is None):
+                self.ser.close()
+        except Exception as e:
+            print('Arduino Error: ', e)
+            
     def getContainer(self):
         return self.container
     
