@@ -22,8 +22,6 @@ class Lidar:
     def connect(self):
         try:
             self.lidar = RPLidar(None, self.port, timeout=3)
-            sleep(2)
-            self.lidar.reset()
             sleep(3)
             print(self.lidar.info)
             print("Lidar connected")
@@ -57,7 +55,8 @@ class Lidar:
             except RPLidarException as e:
                 print("Lidar error: ", e)
                 self.lidar.reset()
-                sleep(3)
+                print("Reseting Lidar")
+                sleep(5)
 
     def getScanData(self):
         return self.scan_data
