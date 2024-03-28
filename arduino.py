@@ -27,6 +27,9 @@ class Arduino:
     def connect(self):
         try:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
+            sleep(3)
+            self.ser.reset_input_buffer()
+            self.ser.reset_output_buffer()
             print("Arduino connected")
         except serial.SerialException as e:
             print("Arduino failed to connect")
@@ -49,7 +52,6 @@ class Arduino:
                 continue
             try:
                 buffer = self.ser.readline().decode("utf-8")
-                
                 data = json.loads(buffer)
                 self.container = data['container']
                 self.collision = data['collision']
